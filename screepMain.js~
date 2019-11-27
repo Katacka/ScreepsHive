@@ -1,0 +1,3 @@
+function findViableRoom() {
+  let map = Game.map;
+}
