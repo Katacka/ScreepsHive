@@ -1,0 +1,23 @@
+module.exports = {
+    /** @param {String} roomName, {integer} gameTicks**/
+    monitorEnergyEfficency: function(roomName, gameTicks){
+        var ticks = gameTicks % 300;
+        if(ticks === 0) {
+            Memory.rooms[roomName].controllerProgress = Game.rooms[roomName].controller.progress;
+            //var energyChange = Game.rooms[roomName].controller.progress - start;
+            //Memory.energyPerRefersh.push(energyChange);
+            //Memory.efficency.push(energyChange/6000);
+        }
+        
+        //console.log(Memory.rooms[roomName].controllerProgress);
+        //console.log(ticks);
+        console.log("Energy efficency: " + (Game.rooms[roomName].controller.progress -  Memory.rooms[roomName].controllerProgress) / (ticks * 20));
+    },
+    
+    /* Monitors the Cpu usage of the supplied function */
+    monitorCpuUsage: function(monitoredFunction, monitoredVar){ //TODO: Implement CPU monitor function wrapper
+        var startCpu = Game.cpu.getUsed();
+        monitoredFunction();
+        console.log('CPU spent on ' + monitoredVar + ':', Game.cpu.getUsed()  - startCpu);
+    }
+};

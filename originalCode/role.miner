@@ -1,0 +1,16 @@
+var utilRoleFunctions = require('util.roleFunctions');
+
+module.exports = {
+    /** @param {Creep} creep **/
+    run: function(creep) {
+        var targetIdx = Memory.roleDefinitions[creep.memory.role].target;
+        var target = Memory.rooms[creep.room.name].flags[targetIdx];
+	    if(creep.carry.energy < creep.carryCapacity) { //If below carrying capacity
+            utilRoleFunctions.harvest(creep, Game.flags[target]);
+        }
+        else {
+            utilRoleFunctions.deposit(creep, Game.flags[target], -1, true);
+        }
+    }
+};
+

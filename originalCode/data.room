@@ -1,0 +1,18 @@
+var roleDefinitons = require('util.roleDefinitions');
+
+//TODO: Filter these rooms to ensure they are ones you own
+var roomMemory = Game.rooms;
+
+for (var room in roomMemory) {
+    //console.log(room);
+    roomMemory[room].numBreeps = {};
+    for (var role in roleDefinitons) {
+        roomMemory[room].numBreeps[role] = _.filter(Game.creeps, creep => creep.memory.role === role && creep.room.name === room).length
+        //console.log(roomMemory[room].numBreeps[role]); 
+    }
+    
+    roomMemory[room].controllerProgress = Game.rooms[room].controller.progress;
+    roomMemory[room].flags = [room + '_1', room + '_2'];
+}
+
+module.exports = roomMemory; 

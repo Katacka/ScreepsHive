@@ -1,0 +1,47 @@
+module.exports = {
+    RC1: {
+        minEnergy: 300,
+        idealBreeps: {
+            miner: 0,
+            altMiner: 0,
+            altRoomMiner: 0,
+            builder: 3,
+            harvester: 4,
+            altHarvester: 4,
+            upgrader: 3
+        }
+    },
+    RC2: { 
+        minEnergy: 500,
+        idealBreeps: {
+            miner: 2,
+            altMiner: 2,
+            builder: 3,
+            harvester: 3,
+            altHarvester: 3,
+            upgrader: 2,
+            repairer: 1
+        }
+    },
+    RC3: { 
+        minEnergy: 750,
+        idealBreeps: {
+            miner: 1,
+            altMiner: 1,
+            builder: 3,
+            harvester: 2,
+            altHarvester: 2,
+            upgrader: 3,
+            repairer: 1
+        }
+    },
+    RC4: { 
+        
+    },
+    RC5: { 
+       minEnergy: null,
+       idealBreeps: {
+           
+       }
+    }
+};

@@ -1,0 +1,174 @@
+var roleHarvester = require('role.harvester');
+var roleUpgrader = require('role.upgrader');
+var roleBuilder = require('role.builder');
+var roleSpawnBuilder = require('role.spawnBuilder')
+var roleMiner = require('role.miner');
+var roleRepairer = require('role.repairer');
+var roleClaimer = require('role.claimer');
+
+var utilRoleFunctions = require('util.roleFunctions'); 
+
+var utilLogFunctions = require('util.logFunctions');
+var utilMemFunctions = require('util.memFunctions');
+
+Memory.rooms = require('data.room');
+Memory.roomLevelDefinitions = require('util.roomLevelDefinitions');
+Memory.roleDefinitions = require('util.roleDefinitions');
+
+Memory.energyPerRefersh = []; //Clears all energyPerRefresh data
+Memory.efficency = []; //Clears all efficency data
+
+var currentSchema;
+
+module.exports.loop = () => {
+    for (let room in Game.rooms) { //TODO: FIX 
+        console.log(room);
+        
+        currentSchema = budgetCreepSchema(Game.rooms[room].energyCapacityAvailable);
+        
+        utilLogFunctions.monitorEnergyEfficency(room, Game.time);
+        
+        defendRoom(room); //TODO: Monitor Cpu usage
+    
+        utilLogFunctions.monitorCpuUsage(utilMemFunctions.manageCreepMemory, 'memory management');
+    
+        utilLogFunctions.monitorCpuUsage(runCreeps, 'creep actions');
+    
+        //var startCpu = Game.cpu.getUsed();
+        
+        let desiredBreeps = Memory.roomLevelDefinitions[currentSchema].idealBreeps;
+        for (let desiredBreep in desiredBreeps) {
+            let maxBreeps = desiredBreeps[desiredBreep];
+            let breepRole = Memory.roleDefinitions[desiredBreep];
+            let breepSpecs = breepRole.bodyPartSchemes[currentSchema];
+            let totalBreeps = Memory.rooms[room].numBreeps[desiredBreep];
+            //var schemaContext = breepRole.bodyPartSchemes[creepSchema];
+            
+            console.log(breepRole.roleName + ': ' + totalBreeps + ' of ' + maxBreeps);
+            if (generateCreep(breepRole.roleName, breepSpecs, currentSchema, totalBreeps, maxBreeps, room)) break;
+        }
+        //console.log('CPU spent on breep generation:', Game.cpu.getUsed()  - startCpu);
+        console.log();
+    }
+} 
+
+function runCreeps() { 
+    for (let name in Game.creeps) {
+        var creep = Game.creeps[name];
+        var creepRole = creep.memory.role;
+        switch(creepRole) {
+            case 'harvester':
+            case 'altHarvester':
+            case 'altRoomHarvester':
+                //var startCpu = Game.cpu.getUsed();
+                roleHarvester.run(creep);
+                //console.log('CPU spent on harvester actions:', Game.cpu.getUsed()  - startCpu);
+                break;
+            case 'upgrader':
+                //var startCpu = Game.cpu.getUsed();
+                if(harvestConditionsMet('all', creep.room.name)) roleUpgrader.run(creep);
+                else roleHarvester.run(creep);
+                //console.log('CPU spent on upgrader actions:', Game.cpu.getUsed()  - startCpu);
+                break;
+            case 'miner':
+            case 'altMiner':
+            case 'altRoomMiner':
+                //var startCpu = Game.cpu.get
+                roleMiner.run(creep);
+                //console.log('CPU spent on miner actions:', Game.cpu.getUsed()  - startCpu);
+                break;
+            case 'builder':
+                //var startCpu = Game.cpu.getUsed();
+                if(harvestConditionsMet('all', creep.room.name)) roleBuilder.run(creep);
+                else roleHarvester.run(creep);
+                //console.log('CPU spent on builder actions:', Game.cpu.getUsed()  - startCpu);
+                break;
+            case 'spawnBuilder':
+                if (!utilRoleFunctions.travel(creep, 'W9N51')) roleBuilder.run(creep); //TODO - Stale refs
+                break;
+            case 'repairer':
+                //var startCpu = Game.cpu.getUsed();
+                roleRepairer.run(creep);
+                //console.log('CPU spent on repairer actions:', Game.cpu.getUsed()  - startCpu);
+                break;
+            case 'claimer':
+                roleClaimer.run(creep, 'E1N51'); //TODO - Stale refs
+                break;
+            default: 
+                console.log("This breep fails to fit any of the defined roles");
+                //TODO - Change this to dynamically fill  roles as needed
+                break;
+        }
+    }
+}
+ 
+function generateCreep(roleName, breepSpecs, creepSchema, totalBreeps, maxBreeps, room){
+    //console.log('M: ' + maxBreeps);
+    if((totalBreeps < maxBreeps) && (harvestConditionsMet('harvesters', room) || roleName === 'altHarvester' || roleName === 'harvester')) { 
+        var newName = creepSchema + '_' + roleName + 'Breep' + Game.time;
+        var breepPrice = breepSpecs.price //breepRole.bodyPartSchemes[bodyPartScheme].price;
+        var spawnEnergyAvailable = Game.rooms[room].energyAvailable;
+        
+        var spawn = Game.rooms[room].find(FIND_MY_SPAWNS);
+        //console.log(spawn[0].name);
+        var spawnState = Game.spawns[spawn[0].name].spawnCreep(breepSpecs.parts, newName, {memory: {role: roleName, room: room}});
+        
+        if(spawnState == OK) {
+            console.log("Spawning new " + creepSchema + " " + roleName + ": " + newName);
+            console.log('T1: ' + Memory.rooms[room].numBreeps[roleName]);
+            Memory.rooms[room].numBreeps[roleName]++;
+            console.log('T2: ' + Memory.rooms[room].numBreeps[roleName]);
+            return true;
+            //if(!!breepRole.supplyChainBreeps) breepRole.supplyChainBreeps.push(newName); //fix
+        }
+        else if(spawnState == ERR_NOT_ENOUGH_ENERGY){
+            console.log("Insufficient energy for " + creepSchema + " " + roleName + ": " + spawnEnergyAvailable + " of " + breepPrice);
+            return false;
+            //TODO: Add container support
+        }
+    }
+}
+
+function budgetCreepSchema(maxEnergy){
+    if (maxEnergy >= 750) return 'RC3';
+    else if (maxEnergy >= 500) return 'RC2';
+    else return 'RC1';
+}
+
+function defendRoom(roomName) { //TODO: Fix glaring weakness where energy is not replenished in tower unless spawn needs energy
+    const hostiles = Game.rooms[roomName].find(FIND_HOSTILE_CREEPS);
+    const towers = Game.rooms[roomName].find(FIND_MY_STRUCTURES, {filter: {structureType: STRUCTURE_TOWER}});
+    if(hostiles.length > 0) { 
+        hostiles.sort((a,b) => a.hits - b.hits);
+        const username = hostiles[0].owner.username;
+        Game.notify(`User ${username} spotted in room ${roomName}`);
+        Game.rooms[roomName].controller.activateSafeMode();
+        towers.forEach(tower => tower.attack(hostiles[0]));
+    }
+    else if (towers.length > 0) {
+        utilRoleFunctions.repair(towers[0]); //fix
+    }
+}
+
+function harvestConditionsMet(condition, roomName){
+    //var currentSchema = Memory.rooms[roomName].currentSchema;
+    var maxBreeps = Memory.roomLevelDefinitions[currentSchema].idealBreeps;
+    var numBreeps = Memory.rooms[roomName].numBreeps;
+    //console.log(Memory.rooms[roomName]);
+    switch(condition) {
+        case 'miners':
+            return numBreeps['miner'] >= maxBreeps['miner'] && numBreeps['altMiner'] >= maxBreeps['altMiner'];
+            break;
+        case 'harvesters': 
+            return numBreeps['altHarvester'] >= maxBreeps['altHarvester'] && numBreeps['harvester'] >= maxBreeps['harvester'];
+            break;
+        case 'all':
+            return numBreeps['altHarvester'] >= maxBreeps['altHarvester'] && numBreeps['harvester'] >= maxBreeps['harvester'] && numBreeps['miner'] >= maxBreeps['miner'] && numBreeps['altMiner'] >= maxBreeps['altMiner'];
+            break;
+        default:
+            console.log("This harvest condition check has not been defined")
+            break;
+    }
+}
+
+

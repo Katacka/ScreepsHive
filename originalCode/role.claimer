@@ -1,0 +1,8 @@
+var utilRoleFunctions = require('util.roleFunctions');
+
+module.exports = {
+    /** @param {Creep} creep **/
+    run: function(creep, roomName) {
+        if (!utilRoleFunctions.travel(creep, roomName)) utilRoleFunctions.claim(creep);
+	}
+}

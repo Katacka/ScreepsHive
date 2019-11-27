@@ -1,0 +1,15 @@
+module.exports = {
+    manageCreepMemory: function(){ 
+        for (var breep in Memory.creeps) {
+            //var breepData = Memory.creeps[breep]
+            if(breep && !Game.creeps[breep]) {
+                Memory.rooms[Memory.creeps[breep].room].numBreeps[Memory.creeps[breep].role]--;
+                //console.log(breepName);
+                //if(!!Memory.roles[breepData.role].supplyChainBreeps) delete Memory.roles[breepData.role].supplyChainBreeps[breepData.name];
+                
+                delete Memory.creeps[breep];
+                console.log('Clearing non-existing creep memory:', breep);
+            }
+        }
+    }
+};

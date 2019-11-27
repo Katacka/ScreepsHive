@@ -1,0 +1,312 @@
+module.exports = {
+    claimer: {
+        roleName: 'claimer',
+        bodyPartSchemes: {
+            RC4: { 
+                parts: [CLAIM,CLAIM,MOVE,MOVE] ,
+                price: 1300,
+                maxBreeps: 0 //Should be 1 when claiming a site
+            },
+            RC3: {
+                parts: [CLAIM,MOVE],
+                price: 780,
+                maxBreeps: 0 //Should be 1 when claiming a site
+            }
+        },
+        totalBreeps: _.filter(Game.creeps, creep => creep.memory.role == 'claimer').length, //TODO: Comment out these totalBreeps
+    },
+    miner: {
+        roleName: 'miner',
+        bodyPartSchemes: {
+            RC5: {
+                parts: [WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE],
+                price: 1400,
+                maxBreeps: 1 //This iteration compromises cost efficency for Cpu efficency, as it is able to exhaust a source by mining every other tick
+                //TODO: Implment idealRC5 Cpu-saving mining behavior
+            },
+            RC3: {
+                parts: [WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE],
+                price: 750, 
+                maxBreeps: 1 //Able to fully exhaust a 3000 energy source in 300 ticks
+            },
+            RC2: {
+                parts: [WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE],
+                price: 500,
+                maxBreeps: 2 
+            },
+            RC1: {
+                parts: [WORK,WORK,CARRY,MOVE],
+                price: 300,
+                maxbreeps: 0 
+            }
+        },
+        totalBreeps: _.filter(Game.creeps, creep => creep.memory.role == 'miner').length,
+        target: 0
+    },
+    altMiner: {
+        roleName: 'altMiner',
+        bodyPartSchemes: {
+            RC5: {
+                parts: [WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE],
+                price: 1400,
+                maxBreeps: 1 //This iteration compromises cost efficency for Cpu efficency, as it is able to exhaust a source by mining every other tick
+                //TODO: Implment idealRC5 Cpu-saving mining behavior
+            },
+            RC3: {
+                parts: [WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE],
+                price: 750, 
+                maxBreeps: 1 //Able to fully exhaust a 3000 energy source in 300 ticks
+            },
+            RC2: {
+                parts: [WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE],
+                price: 500,
+                maxBreeps: 2 
+            },
+            RC1: {
+                parts: [WORK,WORK,CARRY,MOVE],
+                price: 300,
+                maxbreeps: 0
+            }
+        },
+        totalBreeps: _.filter(Game.creeps, creep => creep.memory.role == 'altMiner').length,
+        target: 1
+    },
+    altRoomMiner: { //Currently not in use
+        roleName: 'altRoomMiner',
+        bodyPartSchemes: {
+            RC5: { 
+                parts: [WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE],
+                price: 1400,
+                maxBreeps: 0 //This iteration compromises cost efficency for Cpu efficency, as it is able to exhaust a source by mining every other tick
+                //TODO: Implment idealRC5 Cpu-saving mining behavior
+            },
+            RC3: { 
+                parts: [WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE],
+                price: 750, 
+                maxBreeps: 0 //Able to fully exhaust a 3000 energy source in 300 ticks
+            },
+            RC2: { 
+                parts: [WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE],
+                price: 500,
+                maxBreeps: 0 
+            },
+            RC1: { 
+                parts: [WORK,WORK,CARRY,MOVE],
+                price: 300,
+                maxbreeps: 0 //Though 3 miners would better exhaust the source, some sources do not have enough space
+            }
+        },
+        totalBreeps: _.filter(Game.creeps, creep => creep.memory.role == 'altRoomMiner').length,
+        target: 0
+    },
+    builder: {
+        roleName: 'builder', 
+        bodyPartSchemes: {
+            RC5: { 
+                parts: [WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+                price: 1450,
+                maxBreeps: 1
+            },
+            RC3: { 
+                parts: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE], //Half the necessary MOVE parts operating under the assumption roads exist
+                price: 750,
+                maxBreeps: 3
+            },
+            RC2: {
+                parts: [WORK,WORK,CARRY,CARRY,MOVE,MOVE],
+                price: 400,
+                maxBreeps: 3
+            },
+            RC1: {
+                parts: [WORK,CARRY,CARRY,MOVE],
+                price: 250, 
+                maxBreps: 3
+            }
+        },
+        totalBreeps: _.filter(Game.creeps, creep => creep.memory.role == 'builder').length,
+        target: 0, //fix
+    }, 
+    spawnBuilder: {
+        roleName: 'spawnBuilder', 
+        bodyPartSchemes: {
+            RC5: { 
+                parts: [WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+                price: 1500,
+                maxBreeps: 0 // Should be 2, if building a spawn
+            },
+            RC3: { 
+                parts: [WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], 
+                price: 750,
+                maxBreeps: 0 //Should be 4, if building a spawn
+            },
+            RC2: {
+                parts: [WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],
+                price: 500,
+                maxBreeps: 0 //In almost all cases, base expansion at RC2 is unviable
+            },
+            RC1: {
+                parts: [WORK,CARRY,CARRY,MOVE],
+                price: 250,
+                maxBreeps: 0 //In almost all cases, base expansion at RC2 is unviable
+            }
+        },
+        totalBreeps: _.filter(Game.creeps, creep => creep.memory.role == 'spawnBuilder').length,
+        target: 'Flag3', //fix
+    }, 
+    harvester: {
+        roleName: 'harvester',
+        bodyPartSchemes: {
+            RC5: {
+                parts: [WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+                price: 1050, 
+                maxBreeps: 1
+            },
+            RC3: {
+                parts: [WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE], //Half the necessary MOVE parts operating under the assumption roads exist
+                price: 600,
+                maxBreeps: 2
+            },
+            RC2: {
+                parts: [WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],
+                price: 450,
+                maxBreeps: 3
+            },
+            RC1: {
+                parts: [WORK,CARRY,MOVE,MOVE],
+                price: 250,
+                maxBreeps: 4
+            }
+        },
+        totalBreeps: _.filter(Game.creeps, creep => creep.memory.role == 'harvester').length,
+        target: 0, //fix
+    },
+    altHarvester: {
+        roleName: 'altHarvester',
+        bodyPartSchemes: {
+            RC5: {
+                parts: [WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+                price: 1050, 
+                maxBreeps: 1
+            },
+            RC3: {
+                parts: [WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE], //Half the necessary MOVE parts operating under the assumption roads exist
+                price: 600,
+                maxBreeps: 2
+            },
+            RC2: {
+                parts: [WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],
+                price: 450,
+                maxBreeps: 3
+            },
+            RC1: {
+                parts: [WORK,CARRY,MOVE,MOVE],
+                price: 250,
+                maxBreeps: 4
+            }
+        },
+        totalBreeps: _.filter(Game.creeps, creep => creep.memory.role == 'altHarvester').length,
+        target: 1, //fix
+    },
+    altRoomHarvester: { //Currently not in use
+        roleName: 'altRoomHarvester', 
+        bodyPartSchemes: {
+            RC5: {
+                parts: [WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+                price: 1050, 
+                maxBreeps: 0
+            },
+            RC3: {
+                parts: [WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE], //Half the necessary MOVE parts operating under the assumption roads exist
+                price: 600,
+                maxBreeps: 0
+            },
+            RC2: {
+                parts: [WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],
+                price: 450,
+                maxBreeps: 0
+            },
+            RC1: {
+                parts: [WORK,CARRY,MOVE,MOVE],
+                price: 250,
+                maxBreeps: 0
+            }
+        },
+        totalBreeps: _.filter(Game.creeps, creep => creep.memory.role == 'altRoomHarvester').length,
+        target: 'Flag3',//Memory.roles.altRoomMiner.roleName, //fix
+    },
+    upgrader: {
+        roleName: 'upgrader',
+        bodyPartSchemes: {
+            RC5: {
+                parts: [WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+                price: 1300,
+                maxBreeps: 1
+            },
+            RC3: {
+                parts: [WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE], //Half the necessary MOVE parts operating under the assumption roads exist
+                price: 750, 
+                maxBreeps: 3
+            },
+            RC2: {
+                parts: [WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE],
+                price: 500, 
+                maxBreeps: 2 //3 would provide a more optimal upgrade rate, however due to lacking miners energy supply will not meet demand
+            },
+            RC1: {
+                parts: [WORK,CARRY,MOVE,MOVE],
+                price: 250,
+                maxBreeps: 3 //4 would provide a more optimal upgrade rate, however due to lacking miners energy supply will not meet demand
+            }
+        },
+        totalBreeps: _.filter(Game.creeps, creep => creep.memory.role == 'upgrader').length,
+        target: 1,
+    },
+    repairer: {
+        roleName: 'repairer', 
+        bodyPartSchemes: {
+            RC3: {
+                parts: [WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE], //Half the necessary MOVE parts operating under the assumption roads exist
+                price: 700, 
+                maxBreeps: 1
+            },
+            RC2: {
+                parts: [WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE],
+                price: 500,
+                maxBreeps: 1
+            },
+            RC1: {
+                parts: [WORK,CARRY,CARRY,MOVE],
+                price: 250,
+                maxBreeps: 0
+            }
+        },
+        totalBreeps: _.filter(Game.creeps, creep => creep.memory.role == 'repairer').length,
+        target: 1,
+    },
+    altRoomDefender: { //Currently not in use
+        roleName: 'altRoomDefender',
+        bodyPartSchemes: {
+            RC5: {
+                parts: [TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,HEAL,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL], //50 + 500 + 450 + 250
+                price: 1250,
+                maxBreeps: 0
+            },
+            RC3: {
+                parts: [TOUGH,TOUGH,TOUGH,,MOVE,MOVE,MOVE,HEAL,RANGED_ATTACK,RANGED_ATTACK], //30 + 250 + 300 + 150
+                price: 730,
+                maxBreeps: 0
+            },
+            RC2: {
+                parts: [MOVE,MOVE,HEAL,RANGED_ATTACK], //20 + 250 + 150 + 100
+                price: 500,
+                maxBreeps: 0
+            },
+            RC1: {
+                parts: [TOUGH,MOVE,MOVE,RANGED_ATTACK],
+                price: 260, 
+                maxBreeps: 0
+            }
+        },
+        totalBreeps: _.filter(Game.creeps, creep => creep.memory.role == 'altRoomDefender').length,
+    }
+}

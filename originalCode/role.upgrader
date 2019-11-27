@@ -1,0 +1,26 @@
+var utilRoleFunctions = require('util.roleFunctions');
+
+module.exports = {
+    /** @param {Creep} creep **/
+    run: function(creep) {
+        if(!utilRoleFunctions.supplyChain(creep)){
+            if(creep.memory.upgrading && creep.carry.energy == 0) {
+                creep.memory.upgrading = false;
+                creep.say('Harvesting');
+    	    }
+    	    else if(!creep.memory.upgrading && creep.carry.energy == creep.carryCapacity) {
+    	        creep.memory.upgrading = true;
+    	        creep.say('Upgrading');
+    	    }
+    	    
+    	    if(creep.memory.upgrading) {
+                utilRoleFunctions.upgrade(creep);
+            }
+            else {
+                var targetIdx = Memory.roleDefinitions[creep.memory.role].target;
+                var target = Memory.rooms[creep.room.name].flags[targetIdx];
+    	       utilRoleFunctions.withdraw(creep, Game.flags[target], Game.flags[target])
+            }
+        }
+    }
+};

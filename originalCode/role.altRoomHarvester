@@ -1,0 +1,60 @@
+var utilRoleFunctions = require('util.roleFunctions');
+
+module.exports = {
+    /** @param {Creep} creep **/
+    run: function(creep, minerTarget, sourceNum) {
+        if(!creep.memory.harvesting && creep.carry.energy == 0) {
+            creep.memory.harvesting = true;
+            creep.say('Harvesting');
+	    }
+	    else if(creep.memory.harvesting && creep.carry.energy == creep.carryCapacity) {
+	        creep.memory.harvesting = false;
+	        creep.say('Restocking');
+	    } 
+        if(creep.memory.harvesting) {
+            const sourceContainers = (minerTarget == 'miner') ? Game.flags.Flag3.pos.findInRange(FIND_STRUCTURES, 1, {filter: (structure) => structure.structureType == STRUCTURE_CONTAINER}) : Game.flags.Flag3.pos.findInRange(FIND_STRUCTURES, 1, {filter: (structure) => structure.structureType == STRUCTURE_CONTAINER});
+            sourceContainers.sort((a, b) =>  b.store.energy - a.store.energy);
+            if(sourceContainers.length > 0 && sourceContainers[0].store[RESOURCE_ENERGY] > 0){    
+                if(creep.withdraw(sourceContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(sourceContainers[0], {visualizePathStyle: {stroke: '#ffaa00'}});
+                }
+            }
+            else {
+                const miners = _.filter(Game.creeps, (creep) => creep.memory.role === minerTarget && creep.carry.energy > 0);
+                if(miners.length > 0) {
+                    miners.sort((a, b) =>  b.carry.energy - a.carry.energy);
+                    if(miners[0].transfer(creep, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(miners[0], {visualizePathStyle: {stroke: '#ffaa00'}});
+                    }
+                }
+                else {
+                    const sources = creep.room.find(FIND_SOURCES);
+                    if(sources.length > 0) {
+                        if(creep.harvest(sources[sourceNum]) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(sources[sourceNum], {visualizePathStyle: {stroke: '#ffaa00'}});
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            const structsDeposit = creep.room.find(FIND_STRUCTURES, {filter: (structure) => (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_TOWER) && structure.energy < structure.energyCapacity});
+            if(structsDeposit.length > 0) {
+                if(creep.transfer(structsDeposit[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(structsDeposit[0], {visualizePathStyle: {stroke: '#ffffff'}});
+                }   
+            }
+            else {
+                const storageContainers = Game.spawns.Spawn1.pos.findInRange(FIND_STRUCTURES, 1, {filter: (structure) => structure.structureType == STRUCTURE_CONTAINER});
+                if(storageContainers.length > 0) {
+                    storageContainers.sort((a, b) =>  a.store[RESOURCE_ENERGY] - b.store[RESOURCE_ENERGY]);
+                    if(storageContainers[0].store[RESOURCE_ENERGY] < storageContainers[0].storeCapacity) {
+                        if(creep.transfer(storageContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(storageContainers[0], {visualizePathStyle: {stroke: '#ffffff'}});
+                        }
+                    }
+                }
+            }
+        }
+	}
+};
